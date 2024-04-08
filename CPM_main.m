@@ -1,4 +1,5 @@
-function [perform, rmse_err, predict_label, pos_edge, neg_edge] = CPM_main(Data, Label, Covarate, K_fold, P_thr, pos_neg, Para_sel, Regre_method, Print, Shuffle, Norma)
+function [perform, rmse_err, predict_label, pos_edge, neg_edge] = CPM_main(Data, Label, K_fold, P_thr, pos_neg, Para_sel, Regre_method, Print, Shuffle, Norma)
+%    This function is the main function of CPM.
 %    input:
 %    ----Data, matrix with shape: num_sub*num_edge, 
 %              num_sub: number of data(subject).
@@ -8,8 +9,6 @@ function [perform, rmse_err, predict_label, pos_edge, neg_edge] = CPM_main(Data,
 %              connective of idx th subject.
 %    ----Label, matrix with shape: num_sub*1, the element of label is the
 %              value of subjet which we want to predict, such as IQ, momery.
-%    ----Covarate, matrix with shape: num_sub* ~ , information which used
-%              to assist regression.
 %    ----K_fold, number of fold in perform cross validation.
 %    ----P_thr, threshold of P used when select edge.
 %    ----pos_neg, The parameters used to control the selection of
@@ -28,15 +27,37 @@ function [perform, rmse_err, predict_label, pos_edge, neg_edge] = CPM_main(Data,
 %    ----Shuffle: Whether to shuffle Data, Label and Covarte.
 %    ----Norma: Whether to normalize the independent variables and covariables.
 
+    if nargin < 3
+        K_fold = 10;
+    end
+    if nargin < 4
+        P_thr = 0.05;
+    end
+    if nargin < 5
+        pos_neg = 3;
+    end
+    if nargin < 6
+        Para_sel = 1;
+    end
+    if nargin < 7
+        Regre_method = 1;
+    end
+    if nargin < 8
+        Print = false;
+    end
+    if nargin < 9
+        Shuffle = true;
+    end
+    if nargin < 10
+        Norma = true;
+    end
+
     [num_sub, num_edge] = size(Data);
     
     if Shuffle
         Shuffle_idx = randperm(num_sub);
         Data = Data(Shuffle_idx, :);
         Label = Label(Shuffle_idx);
-        if ~isempty(Covarate)
-            Covarate = Covarate(Shuffle_idx, :);
-        end
     end
     
     predict_label = zeros(num_sub, 1);
@@ -70,19 +91,6 @@ function [perform, rmse_err, predict_label, pos_edge, neg_edge] = CPM_main(Data,
             train_label = (train_label-label_mean)./label_std;
         end
         
-        if ~isempty(Covarate)
-            train_covarate = Covarate(select_idx, :);
-            
-            if Norma
-                cova_mean = mean(train_covarate);
-                cova_std = std(train_covarate);
-                
-                train_covarate = (train_covarate-cova_mean)./cova_std;
-            end
-        else
-            train_covarate = [];
-        end
-        
         valid_data = Data(~select_idx, :);
         valid_label = Label(~select_idx);
         num_valid = size(valid_data, 1);
@@ -90,16 +98,6 @@ function [perform, rmse_err, predict_label, pos_edge, neg_edge] = CPM_main(Data,
         if Norma
             valid_data = (valid_data-data_mean)./data_std;
             valid_label = (valid_label-label_mean)./label_std;
-        end
-        
-        if ~isempty(Covarate)
-            valid_covarate = Covarate(~select_idx, :);
-            
-            if Norma
-                valid_covarate = (valid_covarate-cova_mean)./cova_std;
-            end
-        else
-            valid_covarate = [];
         end
         
         [r_val, p_val] = corr(train_data, train_label);
@@ -146,11 +144,11 @@ function [perform, rmse_err, predict_label, pos_edge, neg_edge] = CPM_main(Data,
         end
         
         if pos_neg==1
-            train_input = [train_pos, train_covarate];
+            train_input = [train_pos];
         elseif pos_neg==2
-            train_input = [train_neg, train_covarate];
+            train_input = [train_neg];
         elseif pos_neg==3
-            train_input = [train_pos, train_neg, train_covarate];
+            train_input = [train_pos, train_neg];
         else
             fprintf("Incorrect input of parameter pos_neg: %d, should be 1, 2 or 3.\n", pos_neg);
         end
@@ -191,11 +189,11 @@ function [perform, rmse_err, predict_label, pos_edge, neg_edge] = CPM_main(Data,
         end
         
         if pos_neg==1
-            valid_input = [valid_pos, valid_covarate];
+            valid_input = [valid_pos];
         elseif pos_neg==2
-            valid_input = [valid_neg, valid_covarate];
+            valid_input = [valid_neg];
         elseif pos_neg==3
-            valid_input = [valid_pos, valid_neg, valid_covarate];
+            valid_input = [valid_pos, valid_neg];
         else
             fprintf("Incorrect input of parameter pos_neg: %d, should be 1, 2 or 3.\n", pos_neg);
         end

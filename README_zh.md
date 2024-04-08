@@ -6,6 +6,7 @@
 
 CPM_main.m
 主函数，接受11个输入
+
 - Data：输入数据，形状为 被试数量*脑网络中边数量
 - Label：需要预测的变量，形状为被试数量*1
 - Covariate：回归分析中用到的协变量，可以为空[]，或者为 被试数量*~ 的矩阵
@@ -27,6 +28,7 @@ CPM_main.m
 - Norma：是否对自变量和协变量做归一化
 
 返回
+
 - perform：模型预测的变量和真实变量的相关系数
 - rmse_err：模型预测变量和真实变量的均方根误差
 - predict_label：模型预测的变量
@@ -34,7 +36,9 @@ CPM_main.m
 - neg_edge：模型运行过程中选择的负相关的边，因为会有交叉验证，所以一条边可能出现多次
 
 运行
+
 - 构造随机数据
+
 ```matlab
 num_sub = 300;
 num_edge = 5000;
@@ -42,9 +46,11 @@ num_edge = 5000;
 Label = randi([20 100], num_sub, 1);
 Data = Label*randn(1, num_edge) + Label.*randn(num_sub, num_edge)*20;
 ```
+
 - 运行CPM
+
 ```matlab
-[perform, rmse_err, predict_label, pos_edge, neg_edge] = CPM_main(Data, Label, [], 10, 0.05, 3, 1, 1, false, true, true);
+[perform, rmse_err, predict_label, pos_edge, neg_edge] = CPM_main(Data, Label);
 
 disp('perform');
 disp(perform);
@@ -53,19 +59,21 @@ disp(rmse_err);
 ```
 
 因为运行过程中会shuffle打乱数据顺序，所以同样的数据每次运行可能得出不一样的结果，为了使运行结果更鲁棒，可以将CPM重复运行多次
+
 ```matlab
-time = 1000; %重复运行的次数
-[perform, mse_err, predict_label, pos_edge, neg_edge] = CPM_repeat(time, Data, Label, [], 10, 0.05, 3, 1, 1, false, true, true);
+[perform, mse_err, predict_label, pos_edge, neg_edge] = CPM_repeat(Data, Label);
 
 disp('perform');
 disp(mean(perform, 'omitnan'));
 disp('rmse_err');
 disp(mean(rmse_err, 'omitnan'));
 ```
+
 为了构造出预测值与真实值相关系数的非参数统计分布，随机打乱数据和label的pair队，并运行CPM算法得到相关系数，重复这一过程得到相关系数的非参数分布
+
 ```matlab
 time = 10000; %重复运行的次数
-[perform_perm, mse_err_perm] = CPM_perm_test(time, Data, Label, [], 10, 0.05, 3, 1, 1, false, true, true);
+[perform_perm, mse_err_perm] = CPM_perm_test(Data, Label, time);], 10, 0.05, 3, 1, 1, false, true, true);
 
 plot_figure(perform_perm, perform);
 ```

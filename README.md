@@ -6,6 +6,7 @@
 
 CPM_main.m
 Main function, accepts 11 inputs
+
 - Data：input data with shape number of subjects * number of edge
 - Label： The variable that needs to be predicted, with a shape of the number of subjects * 1
 - Covariate：Covariates used in the regression analysis, which can be empty [], or a matrix with a shape of the number of subjects * ~
@@ -27,6 +28,7 @@ Main function, accepts 11 inputs
 - Norma：Whether to normalize the independent and covariate variables
 
 returns
+
 - perform: The correlation coefficient between the variables predicted by the model and the actual variables
 - rmse_err: The root mean square error between the variables predicted by the model and the actual variables
 - predict_label: The variables predicted by the model
@@ -35,6 +37,7 @@ returns
 - Execution:
 
 Generate random data
+
 ```matlab
 num_sub = 300;
 num_edge = 5000;
@@ -42,9 +45,11 @@ num_edge = 5000;
 Label = randi([20 100], num_sub, 1);
 Data = Label*randn(1, num_edge) + Label.*randn(num_sub, num_edge)*20;
 ```
+
 - Run CPM
+
 ```matlab
-[perform, rmse_err, predict_label, pos_edge, neg_edge] = CPM_main(Data, Label, [], 10, 0.05, 3, 1, 1, false, true, true);
+[perform, rmse_err, predict_label, pos_edge, neg_edge] = CPM_main(Data, Label);
 
 disp('perform');
 disp(perform);
@@ -53,19 +58,21 @@ disp(rmse_err);
 ```
 
 Because the data order may be shuffled during the execution, the same data might produce different results each time the function runs. To make the results more robust, the Connectome-based Predictive Modeling (CPM) can be run multiple times.
+
 ```matlab
-time = 1000; %Number of repeated runs
-[perform, mse_err, predict_label, pos_edge, neg_edge] = CPM_repeat(time, Data, Label, [], 10, 0.05, 3, 1, 1, false, true, true);
+[perform, mse_err, predict_label, pos_edge, neg_edge] = CPM_repeat(Data, Label);
 
 disp('perform');
 disp(mean(perform, 'omitnan'));
 disp('rmse_err');
 disp(mean(rmse_err, 'omitnan'));
 ```
+
 To construct a non-parametric statistical distribution of the correlation coefficient between the predicted values and the actual values, randomly shuffle the pairs of data and labels, and run the CPM (Connectome-based Predictive Modeling) algorithm to obtain the correlation coefficients. Repeat this process to obtain a non-parametric distribution of the correlation coefficients.
+
 ```matlab
 time = 10000; %Number of repeated runs
-[perform_perm, mse_err_perm] = CPM_perm_test(time, Data, Label, [], 10, 0.05, 3, 1, 1, false, true, true);
+[perform_perm, mse_err_perm] = CPM_perm_test(Data, Label, time);
 
 plot_figure(perform_perm, perform);
 ```
