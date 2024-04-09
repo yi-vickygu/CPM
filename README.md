@@ -9,7 +9,6 @@ Main function, accepts 11 inputs
 
 - Data：input data with shape number of subjects * number of edge
 - Label： The variable that needs to be predicted, with a shape of the number of subjects * 1
-- Covariate：Covariates used in the regression analysis, which can be empty [], or a matrix with a shape of the number of subjects * ~
 - K_fold：The number of groups in the k-fold cross-validation, usually set to 10, i.e., ten-fold cross-validation
 - P_thr：The threshold for selecting edges used in the regression analysis, usually set to 0.05
 - pos_neg：Used to control how to select regression variables, usually set to 3
